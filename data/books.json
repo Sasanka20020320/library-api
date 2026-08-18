@@ -1,13 +1,24 @@
 [
-    {
-        "id": 1,
-        "isbn": "9780132350884",
-        "title": "Clean Code",
-        "author": "Robert C. Martin",
-        "category": "Programming",
-        "publishedYear": 2008,
-        "totalCopies": 5,
-        "availableCopies": 3,
-        "createdAt": "2026-08-18T10:00:00.000Z"
-    }
+  {
+    "id": 1,
+    "isbn": "9780132350884",
+    "title": "Clean Code",
+    "author": "Robert C. Martin",
+    "category": "Programming",
+    "publishedYear": 2008,
+    "totalCopies": 5,
+    "availableCopies": 3,
+    "createdAt": "2026-08-18T10:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "isbn": "9780132350488",
+    "title": "The 48 Laws of Power",
+    "author": "Robert Greene",
+    "category": "Psychology",
+    "publishedYear": 2000,
+    "totalCopies": 10,
+    "availableCopies": 7,
+    "createdAt": "2026-08-18T18:31:18.696Z"
+  }
 ]
