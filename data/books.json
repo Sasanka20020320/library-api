@@ -1,0 +1,13 @@
+[
+    {
+        "id": 1,
+        "isbn": "9780132350884",
+        "title": "Clean Code",
+        "author": "Robert C. Martin",
+        "category": "Programming",
+        "publishedYear": 2008,
+        "totalCopies": 5,
+        "availableCopies": 3,
+        "createdAt": "2026-08-18T10:00:00.000Z"
+    }
+]

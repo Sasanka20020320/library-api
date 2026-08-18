@@ -1,0 +1,11 @@
+[
+    {
+        "id": 1,
+        "name": "Sasanka",
+        "email": "sasanka@example.com",
+        "phone": "0712345678",
+        "membershipType": "Regular",
+        "status": "Active",
+        "createdAt": "2026-08-18T10:00:00.000Z"
+    }
+]
