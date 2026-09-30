@@ -5,9 +5,61 @@ const {
 
 // Fetch books
 const getBooks = async (req, res) => {
+    const { author, category, publishedYear, minYear, maxYear, sort } = req.query;
+
     try {
         // Read file data
-        const books = await readBooks();
+        let books = await readBooks();
+
+        // Filtering
+        // Filter by Author
+        if (author !== undefined) {
+            books = books.filter(b => b.author.toLowerCase().trim().includes(author.toLowerCase().trim()));
+        }
+
+        // Filter by Category
+        if (category !== undefined) {
+            books = books.filter(b => b.category.toLowerCase().trim() === category.toLowerCase().trim());
+        }
+
+        // Filter by Published Year
+        if (publishedYear !== undefined) {
+            const pubYear = Number(publishedYear);
+
+            if (!Number.isNaN(pubYear)) {
+                books = books.filter(b => b.publishedYear === pubYear);
+            }
+        }
+
+        // Filter by Minimum Year
+        if (minYear !== undefined) {
+            const minimumYear = Number(minYear);
+
+            if (!Number.isNaN(minimumYear)) {
+                books = books.filter(b => b.publishedYear <= minimumYear);
+            }
+        }
+
+        // Filter by Maximum Year
+        if (maxYear !== undefined) {
+            const maximumYear = Number(maxYear);
+
+            if (!Number.isNaN(maximumYear)) {
+                books = books.filter(b => b.publishedYear >= maximumYear);
+            }
+        }
+
+        // Sorting
+        // Sort by title and published year
+        if (sort === 'title-asc') {
+            books.sort((a, b) => a.title.localeCompare(b.title));
+        } else if (sort === 'title-desc') {
+            books.sort((a, b) => b.title.localeCompare(a.title));
+        } else if (sort === 'year-asc') {
+            books.sort((a, b) => a.publishedYear - b.publishedYear);
+        } else if (sort === 'year-desc') {
+            books.sort((a, b) => b.publishedYear - a.publishedYear);
+        }
 
         res.status(200).json(books);
     } catch (error) {
@@ -90,7 +142,7 @@ const createBook = async (req, res) => {
     }
 };
 
-// PUT route to update a book
+// Update a book
 const updateBook =  async (req, res) => {
     const id = Number(req.params.id);
     const book = req.body;
@@ -137,6 +189,7 @@ const updateBook =  async (req, res) => {
     }
 };
 
+// Remove a book
 const removeBook = async (req, res) => {
     const id = Number(req.params.id);
 
@@ -166,6 +219,7 @@ const removeBook = async (req, res) => {
     }
 };
 
+// Search a book
 const searchBook = async (req, res) => {
     const { keyword } = req.query;
 
