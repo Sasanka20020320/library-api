@@ -3,6 +3,8 @@ const {
     writeBooks
 } = require('../utils/fileManager');
 
+const validateBook = require('../utils/validateBook');
+
 // Fetch books
 const getBooks = async (req, res) => {
     const { author, category, publishedYear, minYear, maxYear, sort } = req.query;
@@ -95,6 +97,9 @@ const createBook = async (req, res) => {
     const book = req.body;
 
     try {
+        // Validate the book
+        validateBook(book);
+
         let books = [];
 
         try {
