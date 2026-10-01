@@ -38,7 +38,7 @@ const getBooks = async (req, res) => {
             const minimumYear = Number(minYear);
 
             if (!Number.isNaN(minimumYear)) {
-                books = books.filter(b => b.publishedYear <= minimumYear);
+                books = books.filter(b => b.publishedYear >= minimumYear);
             }
         }
 
@@ -47,7 +47,7 @@ const getBooks = async (req, res) => {
             const maximumYear = Number(maxYear);
 
             if (!Number.isNaN(maximumYear)) {
-                books = books.filter(b => b.publishedYear >= maximumYear);
+                books = books.filter(b => b.publishedYear <= maximumYear);
             }
         }
 
@@ -73,6 +73,10 @@ const getBooks = async (req, res) => {
 // Fetch a book by ID
 const getBookById = async (req, res) => {
     const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({ message: "Invalid book ID" });
+    }
 
     try {
         // Read file data
@@ -113,9 +117,9 @@ const createBook = async (req, res) => {
         const maxID = books.length ? Math.max(...books.map(b => b.id)) : 0;
 
         // Check for duplicate ISBN
-        const existingProduct = books.find(b => b.isbn.trim() === book.isbn.trim());
+        const existingBook = books.find(b => b.isbn.trim() === book.isbn.trim());
 
-        if (existingProduct) {
+        if (existingBook) {
             return res.status(400).json({ message: "A book with this ISBN exists" });
         }
 
@@ -143,6 +147,12 @@ const createBook = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
+
+        if (error.message.startsWith("Invalid") ||
+            error.message.startsWith("Missing")) {
+                return res.status(400).json({ message: error.message });
+        }
+
         res.status(500).json({ message: "Failed to create the book" });
     }
 };
@@ -150,9 +160,17 @@ const createBook = async (req, res) => {
 // Update a book
 const updateBook =  async (req, res) => {
     const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({ message: "Invalid book ID" });
+    }
+
     const book = req.body;
 
     try {
+        // Validate the book
+        validateBook(book);
+
         // Read file data
         let books = await readBooks();
 
@@ -167,7 +185,7 @@ const updateBook =  async (req, res) => {
         const duplicateISBN = books.find(b => b.isbn.trim() === book.isbn.trim() && b.id !== id);
 
         if (duplicateISBN) {
-            return res.status(400).json({ message: "Another book with this SKU exists" });
+            return res.status(400).json({ message: "Another book with this ISBN exists" });
         }
 
         // Update the book
@@ -190,6 +208,12 @@ const updateBook =  async (req, res) => {
         });
     } catch (error) {
         console.error(error);
+
+        if (error.message.startsWith("Invalid") ||
+            error.message.startsWith("Missing")) {
+                return res.status(400).json({ message: error.message });
+        }
+
         res.status(500).json({ message: "Failed to update the book" });
     }
 };
@@ -197,6 +221,10 @@ const updateBook =  async (req, res) => {
 // Remove a book
 const removeBook = async (req, res) => {
     const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({ message: "Invalid book ID" });
+    }
 
     try {
         // Read file data
