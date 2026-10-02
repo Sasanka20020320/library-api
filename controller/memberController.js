@@ -62,6 +62,11 @@ const createMember = async (req, res) => {
     const member = req.body;
 
     try {
+        // Validate request body
+        if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
+            return res.status(400).json({ message: "Invalid request body" });
+        }
+
         // Validate member data
         validateMember(member);
 
@@ -78,10 +83,17 @@ const createMember = async (req, res) => {
         const maxID = members.length ? Math.max(...members.map(m => m.id)) : 0;
 
         // Check for duplicate email
-        const existingMember = members.find(m => m.email === member.email);
+        const duplicateEmail = members.find(m => m.email.toLowerCase().trim() === member.email.toLowerCase().trim());
 
-        if (existingMember) {
+        if (duplicateEmail) {
             return res.status(400).json({ message: "A member with this email already exists" });
+        }
+
+        // Check for duplicate phone number
+        const duplicatePhone = members.find(m => m.phone.trim() === member.phone.trim());
+
+        if (duplicatePhone) {
+            return res.status(400).json({ message: "A member with this phone number already exists" });
         }
 
         // Create a new member object
@@ -128,13 +140,18 @@ const updateMember = async (req, res) => {
     const member = req.body;
 
     try {
+        // Validate request body
+        if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
+            return res.status(400).json({ message: "Invalid request body" });
+        }
+
         // Validate member data
         validateMember(member);
 
         // Read file data
         let members = await readMembers();
 
-        // Find the book index to update
+        // Find the member index to update
         const memberIndex = members.findIndex(m => m.id === id);
 
         if (memberIndex === -1) {
@@ -142,10 +159,17 @@ const updateMember = async (req, res) => {
         }
 
         // Check for duplicate email
-        const duplicateEmail = members.find(m => m.email === member.email && m.id !== id);
+        const duplicateEmail = members.find(m => m.email.toLowerCase().trim() === member.email.toLowerCase().trim() && m.id !== id);
 
         if (duplicateEmail) {
             return res.status(400).json({ message: "A member with this email already exists" });
+        }
+
+        // Check for duplicate phone number
+        const duplicatePhone = members.find(m => m.phone.trim() === member.phone.trim() && m.id !== id);
+
+        if (duplicatePhone) {
+            return res.status(400).json({ message: "A member with this phone number already exists" });
         }
 
         // Update the member
@@ -168,7 +192,7 @@ const updateMember = async (req, res) => {
         ) {
             return res.status(400).json({ message: error.message });
         }
-        
+
         res.status(500).json({ message: "Failed to update the member" });
     }
 };
@@ -193,13 +217,13 @@ const removeMember = async (req, res) => {
         }
 
         // Remove the member from the array
-        members.splice(memberIndex, 1);
+        const removedMember =members.splice(memberIndex, 1)[0];
 
         // Write data back to the JSON file
         await writeMembers(members);
         res.status(200).json({ 
             message: "Member removed successfully",
-            member: members[memberIndex]
+            member: removedMember
         });
     } catch (error) {
         console.error(error);
@@ -211,8 +235,8 @@ const removeMember = async (req, res) => {
 const searchMember = async (req, res) => {
     const { keyword } = req.query;
 
-    if (!keyword) {
-        return res.status(400).json({ message: "Keyword is required for search" });
+    if (typeof keyword !== 'string' || !keyword.trim()) {
+        return res.status(400).json({ message: "A non-empty search keyword is required" });
     }
 
     try {
