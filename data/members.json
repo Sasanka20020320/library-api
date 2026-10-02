@@ -7,5 +7,23 @@
     "membershipType": "Regular",
     "status": "Active",
     "createdAt": "2026-08-18T10:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "name": "Wishwa",
+    "email": "wishwa@email.com",
+    "phone": "0721234567",
+    "membershipType": "Premium",
+    "status": "Active",
+    "createdAt": "2026-10-02T16:48:40.257Z"
+  },
+  {
+    "id": 3,
+    "name": "Jayasinghe",
+    "email": "jayasinghe@email.com",
+    "phone": "0721234567",
+    "membershipType": "Regular",
+    "status": "Inactive",
+    "createdAt": "2026-10-02T17:20:41.769Z"
   }
 ]

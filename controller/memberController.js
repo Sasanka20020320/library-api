@@ -3,10 +3,26 @@ const {
     writeMembers
 } = require('../utils/fileManager');
 
+const validateMember = require('../utils/validateMember');
+
 // Fetch members
 const getMembers = async (req, res) => {
+    const { membershipType, status } = req.query;
+
     try {
-        const members = await readMembers();
+        // Read file data
+        let members = await readMembers();
+
+        // Filtering
+        // Filter by Membership Type
+        if (membershipType !== undefined) {
+            members = members.filter(m => m.membershipType.toLowerCase().trim() === membershipType.toLowerCase().trim());
+        }
+
+        // Filter by status
+        if (status !== undefined) {
+            members = members.filter(m => m.status.toLowerCase().trim() === status.toLowerCase().trim());
+        }
         res.status(200).json(members);
     } catch (error) {
         console.error(error);
@@ -46,6 +62,9 @@ const createMember = async (req, res) => {
     const member = req.body;
 
     try {
+        // Validate member data
+        validateMember(member);
+
         let members = [];
 
         try {
@@ -87,6 +106,13 @@ const createMember = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
+
+        if (error.message.startsWith("Invalid") ||
+            error.message.startsWith("Missing")
+        ) {
+            return res.status(400).json({ message: error.message });
+        }
+
         res.status(500).json({ message: "Failed to create member" });
     }
 };
@@ -102,6 +128,9 @@ const updateMember = async (req, res) => {
     const member = req.body;
 
     try {
+        // Validate member data
+        validateMember(member);
+
         // Read file data
         let members = await readMembers();
 
@@ -133,6 +162,13 @@ const updateMember = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
+
+        if (error.message.startsWith("Invalid") ||
+            error.message.startsWith("Missing")
+        ) {
+            return res.status(400).json({ message: error.message });
+        }
+        
         res.status(500).json({ message: "Failed to update the member" });
     }
 };
@@ -171,10 +207,44 @@ const removeMember = async (req, res) => {
     }
 };
 
+// Search member
+const searchMember = async (req, res) => {
+    const { keyword } = req.query;
+
+    if (!keyword) {
+        return res.status(400).json({ message: "Keyword is required for search" });
+    }
+
+    try {
+        // Read file data
+        const members = await readMembers();
+
+        const searchedKeyword = keyword.toLowerCase().trim();
+
+        // Search for members by name or email
+        const searchedMember = members.filter(m => {
+            const nameMatch = m.name ? m.name.toLowerCase().trim().includes(searchedKeyword) : false;
+            const emailMatch = m.email ? m.email.toLowerCase().trim().includes(searchedKeyword) : false;
+
+            return nameMatch || emailMatch;
+        });
+
+        if (searchedMember.length === 0) {
+            return res.status(404).json({ message: "No members found matching the keyword" });
+        }
+
+        res.status(200).json(searchedMember);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Failed to search members" });
+    }
+}
+
 module.exports = {
     getMembers,
     getMemberById,
     createMember,
     updateMember,
-    removeMember
+    removeMember,
+    searchMember
 }

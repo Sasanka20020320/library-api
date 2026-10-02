@@ -275,6 +275,10 @@ const searchBook = async (req, res) => {
             return isbnMatch || titleMatch || authorMatch;
         });
 
+        if (searchedBook.length === 0) {
+            return res.status(404).json({ message: "No books found matching the search keyword" });
+        }
+
         res.status(200).json(searchedBook);
     } catch (error) {
         console.error(error);
