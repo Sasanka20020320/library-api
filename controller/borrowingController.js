@@ -82,7 +82,19 @@ const createBorrowing = async (req, res) => {
         const bookIndex = books.findIndex(b => b.id === borrowing.bookId);
 
         if (bookIndex === -1) {
-            return res.status(404).json({ message: "Assigned book does not exists" });
+            return res.status(404).json({ message: "Assigned book does not exist" });
+        }
+
+        // Check if the member exists 
+        const memberExists = members.find(m => m.id === borrowing.memberId);
+
+        if (!memberExists) {
+            return res.status(404).json({ message: "Assigned member does not exist" });
+        }
+
+        // Check if the member is active
+        if (memberExists.status.toLowerCase() !== "active") {
+            return res.status(404).json({ message: "Assigned member is inactive" });
         }
 
         // Check if the book have available copies
@@ -92,18 +104,6 @@ const createBorrowing = async (req, res) => {
 
         // Update the book copies
         books[bookIndex].availableCopies -= 1;
-
-        // Check if the member exists and status is active
-        const memberExists = members.find(m => m.id === borrowing.memberId);
-
-        if (!memberExists) {
-            return res.status(404).json({ message: "Assigned member does not exist" });
-        }
-
-        // Check if the member is inactive
-        if (memberExists.status.toLowerCase() !== "active") {
-            return res.status(404).json({ message: "Assigned member is inactive" });
-        }
 
         // Find the ID of the last borrowing
         const maxID = borrowings.length ? Math.max(...borrowings.map(b => b.id)) : 0;
@@ -145,19 +145,17 @@ const createBorrowing = async (req, res) => {
     }
 };
 
-// Update a borrowing
-const updateBorrowing = async (req, res) => {
+// Return a book
+const returnBook = async (req, res) => {
     const id = Number(req.params.id);
-    const borrowing = req.body;
+
+    if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({ message: "Invalid borrowing ID" });
+    }
 
     try {
-        // Validate borrowing
-        validateBorrowing(borrowing);
-
         // Read file data
         let borrowings = await readBorrowings();
-        const books = await readBooks();
-        const members = await readMembers();
 
         // Find the borrowing index to update
         const borrowingIndex = borrowings.findIndex(b => b.id === id);
@@ -166,66 +164,10 @@ const updateBorrowing = async (req, res) => {
             return res.status(404).json({ message: "Borrowing not found" });
         }
 
-        // Check if the book exists
-        const bookExists = books.find(b => b.id === borrowing.bookId);
-
-        if (!bookExists) {
-            return res.status(404).json({ message: "Assigned book does not exist" });
+        // Prevent returning the same borrowing twice
+        if (borrowings[borrowingIndex].status === "Returned") {
+            return res.status(400).json({ message: "This book has already been returned" });
         }
-
-        // Check if the member exists
-        const memberExists = members.find(m => m.id === borrowing.memberId);
-
-        if (!memberExists) {
-            return res.status(404).json({ message: "Assigned member does not exist" });
-        }
-
-        // Check if the member is inactive
-        if (memberExists.status.toLowerCase() !== "active") {
-            return res.status(404).json({ message: "Assigned member is inactive" });
-        }
-
-        // Check if the status and returnedAt are valid
-        if (borrowings[borrowingIndex].status !== 'Borrowed' || borrowings[borrowingIndex].returnedAt !== null) {
-            return res.status(400).json({ message: "Status and Returned date can only be updated by returning the book" });
-        }
-
-        // Update the borrowing
-        borrowings[borrowingIndex] = {
-            ...borrowings[borrowingIndex],
-            ...req.body
-        }
-
-        // Write data back to the JSON file
-        await writeBorrowings(borrowings);
-
-        res.status(200).json({ 
-            message: "Borrowing updated successfully",
-            borrowing: borrowings[borrowingIndex]
-        });
-    } catch (error) {
-        console.error(error);
-
-        if (error.message.startsWith("Missing") ||
-            error.message.startsWith("Invalid")
-        ) {
-            return res.status(400).json({ message: error.message });
-        }
-
-        res.status(500).json({ message: "Failed to update the borrowing" });
-    }
-};
-
-// Return a book
-const returnBook = async (req, res) => {
-    const id = Number(req.params.id);
-
-    try {
-        // Read file data
-        let borrowings = await readBorrowings();
-
-        // Find the borrowing index to update
-        const borrowingIndex = borrowings.findIndex(b => b.id === id);
 
         // Update the borrowing status and returned date
         borrowings[borrowingIndex].status = "Returned";
@@ -238,6 +180,10 @@ const returnBook = async (req, res) => {
 
         if (bookIndex === -1) {
             return res.status(404).json({ message: "Book not found" });
+        }
+
+        if (books[bookIndex].availableCopies >= books[bookIndex].totalCopies) {
+            return res.status(400).json({ message: "Book already has all copies available" });
         }
 
         books[bookIndex].availableCopies += 1;
@@ -260,6 +206,5 @@ module.exports = {
     getBorrowings,
     getBorrowingByID,
     createBorrowing,
-    updateBorrowing,
     returnBook
 };

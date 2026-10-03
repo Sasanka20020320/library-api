@@ -7,13 +7,13 @@ function validateBorrowing(borrowing) {
     }
 
     // Book ID validation
-    if (typeof borrowing.bookId !== 'number') {
-        throw new Error("Invalid book id, must be a number");
+    if (!Number.isInteger(borrowing.bookId) || borrowing.bookId <= 0) {
+        throw new Error("Invalid book ID, must be a positive integer");
     }
 
     // Member ID validation
-    if (typeof borrowing.memberId !== 'number') {
-        throw new Error("Invalid member id, must be a number");
+    if (!Number.isInteger(borrowing.memberId) || borrowing.memberId <= 0) {
+        throw new Error("Invalid member id, must be a positive integer");
     }
 };
 

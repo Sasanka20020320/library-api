@@ -5,7 +5,6 @@ const {
     getBorrowings,
     getBorrowingByID,
     createBorrowing,
-    updateBorrowing,
     returnBook
 } = require('../controller/borrowingController');
 
@@ -17,9 +16,6 @@ router.get('/:id', getBorrowingByID);
 
 // POST route to create a borrowing
 router.post('/', createBorrowing);
-
-// PUT route to update a borrowing
-router.put('/:id', updateBorrowing);
 
 // PATCH route to Return a book
 router.patch('/:id', returnBook);

@@ -16,5 +16,14 @@
     "dueDate": "2026-10-10T19:34:57.319Z",
     "returnedAt": null,
     "status": "Borrowed"
+  },
+  {
+    "id": 3,
+    "bookId": 1,
+    "memberId": 1,
+    "borrowedAt": "2026-10-03T20:19:38.502Z",
+    "dueDate": "2026-10-10T20:19:38.502Z",
+    "returnedAt": "2026-10-03T20:19:59.655Z",
+    "status": "Returned"
   }
 ]

@@ -7,7 +7,7 @@
     "category": "Programming",
     "publishedYear": 2008,
     "totalCopies": 5,
-    "availableCopies": 4,
+    "availableCopies": 5,
     "createdAt": "2026-08-18T10:00:00.000Z"
   },
   {
@@ -18,7 +18,7 @@
     "category": "Psychology",
     "publishedYear": 2000,
     "totalCopies": 10,
-    "availableCopies": 6,
+    "availableCopies": 10,
     "createdAt": "2026-08-18T18:31:18.696Z"
   },
   {
@@ -29,7 +29,7 @@
     "category": "Psychology",
     "publishedYear": 2018,
     "totalCopies": 12,
-    "availableCopies": 2,
+    "availableCopies": 11,
     "createdAt": "2026-10-01T16:40:31.261Z"
   }
 ]
