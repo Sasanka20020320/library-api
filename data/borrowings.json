@@ -1,11 +1,20 @@
 [
-    {
-        "id": 1,
-        "bookId": 1,
-        "memberId": 1,
-        "borrowedAt": "2026-08-18",
-        "dueDate": "2026-08-25",
-        "returnedAt": null,
-        "status": "Borrowed"
-    }
+  {
+    "id": 1,
+    "bookId": 1,
+    "memberId": 1,
+    "borrowedAt": "2026-08-18",
+    "dueDate": "2026-08-25",
+    "returnedAt": "2026-10-03T19:44:37.992Z",
+    "status": "Returned"
+  },
+  {
+    "id": 2,
+    "bookId": 3,
+    "memberId": 2,
+    "borrowedAt": "2026-10-03T19:34:57.319Z",
+    "dueDate": "2026-10-10T19:34:57.319Z",
+    "returnedAt": null,
+    "status": "Borrowed"
+  }
 ]
