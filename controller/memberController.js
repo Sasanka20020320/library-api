@@ -1,6 +1,7 @@
 const {
     readMembers,
-    writeMembers
+    writeMembers,
+    readBorrowings
 } = require('../utils/fileManager');
 
 const validateMember = require('../utils/validateMember');
@@ -208,6 +209,7 @@ const removeMember = async (req, res) => {
     try {
         // Read file data
         let members = await readMembers();
+        const borrowings = await readBorrowings();
 
         // Find the member index to remove
         const memberIndex = members.findIndex(m => m.id === id);
@@ -216,8 +218,15 @@ const removeMember = async (req, res) => {
             return res.status(404).json({ message: "Member not found" });
         }
 
+        // Check if the member borrowed any book
+        const borrowed = borrowings.find(b => b.memberId === id && b.status === "Borrowed");
+
+        if (borrowed) {
+            return res.status(400).json({ message: "Can't remove the member due to having a borrowing" });
+        }
+
         // Remove the member from the array
-        const removedMember =members.splice(memberIndex, 1)[0];
+        const removedMember = members.splice(memberIndex, 1)[0];
 
         // Write data back to the JSON file
         await writeMembers(members);
@@ -264,11 +273,25 @@ const searchMember = async (req, res) => {
     }
 }
 
+// Reports
+const totalMembersReport = async (req, res) => {
+    try{
+        // Read file data
+        const members = await readMembers();
+
+        res.status(200).json({ totalMembers: members.length });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Failed to generate the total members report" });
+    }
+};
+
 module.exports = {
     getMembers,
     getMemberById,
     createMember,
     updateMember,
     removeMember,
-    searchMember
+    searchMember,
+    totalMembersReport
 }

@@ -202,9 +202,177 @@ const returnBook = async (req, res) => {
     }
 };
 
+// Reports
+// Total borrowings report
+const totalBorrowingsReport = async (req, res) => {
+    try {
+        // Read file data
+        const borrowings = await readBorrowings();
+
+        res.status(200).json({ totalBorrowings: borrowings.length });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Failed to generate the total borrowings report" });
+    }
+};
+
+// Currently borrowed books report
+const borrowedReport = async (req, res) => {
+    try {
+        // Read file data
+        const borrowings = await readBorrowings();
+        const books = await readBooks();
+        const members = await readMembers();
+
+        const borrowedBooks = borrowings.reduce((result, borrowing) => {
+            if (borrowing.status === "Borrowed") {
+                const book = books.find(b => b.id === borrowing.bookId);
+                const member = members.find(m => m.id === borrowing.memberId);
+
+                if (book && member) {
+                    result.push({
+                        borrowingId: borrowing.id,
+                        bookId: book.id,
+                        bookName: book.title,
+                        memberId: member.id,
+                        memberName: member.name,
+                        borrowedAt: borrowing.borrowedAt,
+                        dueDate: borrowing.dueDate
+                    });
+                }
+            }
+
+            return result;
+        }, []);
+
+        res.status(200).json(borrowedBooks);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Failed to generate the borrowed books report" });
+    }
+};
+
+// Overdue books report
+const overdueReport = async (req, res) => {
+    try {
+        // Read file data
+        const borrowings = await readBorrowings();
+        const books = await readBooks();
+        const members = await readMembers();
+
+        const overdueBooks = borrowings.reduce((result, borrowing) => {
+            if (borrowing.status === "Borrowed" && borrowing.dueDate < new Date().toISOString()) {
+                const book = books.find(b => b.id === borrowing.bookId);
+                const member = members.find(m => m.id === borrowing.memberId);
+
+                if (book && member) {
+                    result.push({
+                        borrowingId: borrowing.id,
+                        bookId: book.id,
+                        bookName: book.title,
+                        memberId: member.id,
+                        memberName: member.name,
+                        dueDate: borrowing.dueDate
+                    });
+                }
+            }
+
+            return result;
+        }, []);
+
+        res.status(200).json(overdueBooks);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Failed to generate the overdue books report" });
+    }
+};
+
+// Popular books report
+const popularBooksReport = async (req, res) => {
+    try {
+        // Read file data
+        const borrowings = await readBorrowings();
+        const books = await readBooks();
+
+        // Count the borrowed count for each book
+        const popularBooks = borrowings.reduce((acc, borrowing) => {
+            acc[borrowing.bookId] = (acc[borrowing.bookId] || 0) + 1;
+
+            return acc;
+        }, {});
+
+        // Conver the counts into a report
+        const sortedBorrowings = Object.entries(popularBooks).map(([bookId, borrowCount]) => {
+            const book = books.find(b => b.id === Number(bookId));
+
+            if (!book) {
+                return null;
+            }
+
+            return {
+                bookId: Number(bookId),
+                bookName: book.title,
+                borrowCount
+            };
+        }).sort((a, b) => b.borrowCount - a.borrowCount);
+
+        res.status(200).json(sortedBorrowings);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Failed to generate the popular books report" });
+    }
+};
+
+// Member borrowing report
+const memberBorrowingReport = async (req, res) => {
+    try {
+        const borrowings = await readBorrowings();
+        const members = await readMembers();
+
+        const memberCounts = borrowings.reduce((acc, borrowing) => {
+            acc[borrowing.memberId] =
+                (acc[borrowing.memberId] || 0) + 1;
+
+            return acc;
+        }, {});
+
+        const report = Object.entries(memberCounts)
+            .map(([memberId, borrowCount]) => {
+                const member = members.find(
+                    m => m.id === Number(memberId)
+                );
+
+                if (!member) {
+                    return null;
+                }
+
+                return {
+                    memberId: Number(memberId),
+                    memberName: member.name,
+                    borrowCount
+                };
+            })
+            .filter(Boolean)
+            .sort((a, b) => b.borrowCount - a.borrowCount);
+
+        res.status(200).json(report);
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: "Failed to generate member borrowing report"
+        });
+    }
+};
+
 module.exports = {
     getBorrowings,
     getBorrowingByID,
     createBorrowing,
-    returnBook
+    returnBook,
+    totalBorrowingsReport,
+    borrowedReport,
+    overdueReport,
+    popularBooksReport,
+    memberBorrowingReport
 };

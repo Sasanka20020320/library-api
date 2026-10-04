@@ -1,6 +1,7 @@
 const {
     readBooks,
-    writeBooks
+    writeBooks,
+    readBorrowings
 } = require('../utils/fileManager');
 
 const validateBook = require('../utils/validateBook');
@@ -229,12 +230,20 @@ const removeBook = async (req, res) => {
     try {
         // Read file data
         let books = await readBooks();
+        const borrowings = await readBorrowings();
 
         // Find the book index to remove
         const bookIndex = books.findIndex(b => b.id === id);
 
         if (bookIndex === -1) {
             return res.status(404).json({ message: "Book not found" });
+        }
+
+        // Check if a book copy is borrowed
+        const borrowed = borrowings.find(b => b.bookId === id && b.status === "Borrowed");
+
+        if (borrowed) {
+            return res.status(400).json({ message: "Can't remove a borrowed book" });
         }
 
         // Remove the book
@@ -286,11 +295,26 @@ const searchBook = async (req, res) => {
     }
 };
 
+// Reports
+// Total books Report
+const totalBooksReport = async (req, res) => {
+    try {
+        // Read file data
+        const books = await readBooks();
+
+    res.status(200).json({ totalBooks: books.length });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error generating the total books report" });
+    }
+};
+
 module.exports = {
     getBooks,
     getBookById,
     createBook,
     updateBook,
     removeBook,
-    searchBook
+    searchBook,
+    totalBooksReport
 };

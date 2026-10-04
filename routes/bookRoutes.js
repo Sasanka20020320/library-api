@@ -7,7 +7,8 @@ const {
     createBook,
     updateBook,
     removeBook,
-    searchBook
+    searchBook,
+    totalBooksReport
 } = require('../controller/bookController');
 
 // GET route to fetch books
@@ -15,6 +16,9 @@ router.get('/', getBooks);
 
 // GET route to search a book
 router.get('/search', searchBook);
+
+// GET route to generate the total books report
+router.get('/reports/total', totalBooksReport);
 
 // GET route to fetch a book by ID
 router.get('/:id', getBookById);

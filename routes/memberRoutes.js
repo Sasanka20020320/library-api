@@ -7,7 +7,8 @@ const {
     createMember,
     updateMember,
     removeMember,
-    searchMember
+    searchMember,
+    totalMembersReport
 } = require('../controller/memberController');
 
 // GET route to fetch all members
@@ -15,6 +16,9 @@ router.get('/', getMembers);
 
 // GET route to fetch a searched member
 router.get('/search', searchMember);
+
+// GET route to generate the total members report
+router.get('/reports/total', totalMembersReport);
 
 // GET route to fetch a member by ID
 router.get('/:id', getMemberById);
